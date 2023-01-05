@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from typing import Optional
+from fastapi import APIRouter, Header
 from fastapi.responses import Response, HTMLResponse, PlainTextResponse
 
 router = APIRouter(
@@ -14,7 +15,33 @@ def get_all_products():
     return Response(content=data, media_type='text/plain')
 
 
-@router.get('/{id}')
+@router.get('/withheader')
+def get_products(
+    response: Response,
+    custom_header: Optional[str] = Header(None)
+    ):
+    response.headers['custom_response_header'] = ", ".join(custom_header)
+    return products
+
+
+@router.get('/{id}', responses={
+    200: {
+        "content": {
+            "text/html": {
+                "example": "<div>Product</div>"
+            }
+        },
+        "description": "Returns the HTML for an object"
+    },
+    404: {
+        "content": {
+            "text/plain": {
+                "example": "Product not available"
+            }
+        },
+        "description": "A cleartext error message"
+    }
+})
 def get_product(id: int):
     if id > len(products):
         out = "Product not available"
